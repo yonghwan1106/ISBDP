@@ -1,21 +1,28 @@
 import streamlit as st
-from sub01 import show_realtime_safety_map
-from sub02 import show_accident_prediction
-from sub03 import show_safety_performance_dashboard
-from sub04 import show_worker_movement_analysis
-from sub05 import show_equipment_status_dashboard
-from sub06 import show_environmental_data_visualization
-from sub07 import show_safety_compliance_dashboard
-from sub08 import show_emergency_response_simulator
-from sub09 import show_ppe_monitoring_dashboard
-from sub10 import show_safety_training_effectiveness
+import importlib
+
+def import_module(module_name):
+    try:
+        return importlib.import_module(module_name)
+    except ImportError:
+        return None
+
+sub01 = import_module('sub01')
+sub02 = import_module('sub02')
+sub03 = import_module('sub03')
+sub04 = import_module('sub04')
+sub05 = import_module('sub05')
+sub06 = import_module('sub06')
+sub07 = import_module('sub07')
+sub08 = import_module('sub08')
+sub09 = import_module('sub09')
+sub10 = import_module('sub10')
 
 def main():
     st.set_page_config(page_title="산업단지 안전 빅데이터 플랫폼", page_icon="🏭", layout="wide")
     
     st.title("산업단지 안전 빅데이터 플랫폼 (ISBDP)")
 
-    # 사이드바에 기능 선택 메뉴 추가
     menu = [
         "실시간 안전 지도",
         "사고 예측 시뮬레이션",
@@ -31,29 +38,19 @@ def main():
     
     choice = st.sidebar.selectbox("기능 선택", menu)
 
-    # 선택된 기능에 따라 해당 모듈의 함수 호출
-    if choice == "실시간 안전 지도":
-        show_realtime_safety_map()
-    elif choice == "사고 예측 시뮬레이션":
-        show_accident_prediction()
-    elif choice == "안전 성과 대시보드":
-        show_safety_performance_dashboard()
-    elif choice == "작업자 동선 분석":
-        show_worker_movement_analysis()
-    elif choice == "설비 상태 모니터링":
-        show_equipment_status_dashboard()
-    elif choice == "환경 데이터 시각화":
-        show_environmental_data_visualization()
-    elif choice == "안전 규정 준수율 대시보드":
-        show_safety_compliance_dashboard()
-    elif choice == "비상 대응 시뮬레이터":
-        show_emergency_response_simulator()
-    elif choice == "PPE 착용 현황 모니터링":
-        show_ppe_monitoring_dashboard()
-    elif choice == "안전 교육 효과성 분석":
-        show_safety_training_effectiveness()
+    modules = [sub01, sub02, sub03, sub04, sub05, sub06, sub07, sub08, sub09, sub10]
+    functions = ['show_realtime_safety_map', 'show_accident_prediction', 'show_safety_performance_dashboard',
+                 'show_worker_movement_analysis', 'show_equipment_status_dashboard', 'show_environmental_data_visualization',
+                 'show_safety_compliance_dashboard', 'show_emergency_response_simulator', 'show_ppe_monitoring_dashboard',
+                 'show_safety_training_effectiveness']
 
-    # 푸터 추가
+    for i, module in enumerate(modules):
+        if choice == menu[i]:
+            if module is not None and hasattr(module, functions[i]):
+                getattr(module, functions[i])()
+            else:
+                st.warning(f"'{choice}' 기능은 아직 구현되지 않았습니다.")
+
     st.sidebar.markdown("---")
     st.sidebar.info("© 2024 산업단지 안전 빅데이터 플랫폼 (ISBDP). All rights reserved.")
 
