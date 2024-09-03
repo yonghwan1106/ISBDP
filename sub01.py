@@ -1,6 +1,5 @@
 import streamlit as st
-import folium
-from streamlit_folium import folium_static
+import pydeck as pdk
 import pandas as pd
 import random
 
@@ -17,34 +16,48 @@ def generate_safety_data(num_points=20):
 def get_color(safety_level):
     """안전 수준에 따른 색상 반환"""
     if safety_level == '안전':
-        return 'green'
+        return [0, 255, 0, 160]
     elif safety_level == '주의':
-        return 'orange'
+        return [255, 165, 0, 160]
     else:
-        return 'red'
+        return [255, 0, 0, 160]
 
 def show_realtime_safety_map():
     st.subheader("실시간 안전 지도")
 
     # 가상의 안전 데이터 생성
     df = generate_safety_data()
+    
+    # 색상 데이터 추가
+    df['color'] = df['safety_level'].apply(get_color)
 
-    # 지도 생성 (중심점은 데이터의 평균 위치)
-    m = folium.Map(location=[df['lat'].mean(), df['lon'].mean()], zoom_start=12)
+    # pydeck 레이어 생성
+    layer = pdk.Layer(
+        "ScatterplotLayer",
+        df,
+        get_position=['lon', 'lat'],
+        get_color='color',
+        get_radius=300,
+        pickable=True
+    )
 
-    # 데이터포인트를 지도에 추가
-    for _, row in df.iterrows():
-        folium.CircleMarker(
-            location=[row['lat'], row['lon']],
-            radius=10,
-            popup=row['safety_level'],
-            color=get_color(row['safety_level']),
-            fill=True,
-            fillColor=get_color(row['safety_level'])
-        ).add_to(m)
+    # 뷰 상태 설정
+    view_state = pdk.ViewState(
+        latitude=df['lat'].mean(),
+        longitude=df['lon'].mean(),
+        zoom=10,
+        pitch=0
+    )
 
-    # Streamlit에 지도 표시
-    folium_static(m)
+    # pydeck 차트 생성
+    chart = pdk.Deck(
+        layers=[layer],
+        initial_view_state=view_state,
+        tooltip={"text": "{safety_level}"}
+    )
+
+    # Streamlit에 차트 표시
+    st.pydeck_chart(chart)
 
     # 데이터 테이블 표시 (옵션)
     if st.checkbox("원본 데이터 보기"):
