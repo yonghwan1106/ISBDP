@@ -1,3 +1,4 @@
+
 import streamlit as st
 import importlib
 
@@ -7,6 +8,7 @@ def import_module(module_name):
     except ImportError:
         return None
 
+# 모듈 임포트
 sub01 = import_module('sub01')
 sub02 = import_module('sub02')
 sub03 = import_module('sub03')
