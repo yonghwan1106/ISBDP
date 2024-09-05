@@ -1,90 +1,72 @@
+
 import streamlit as st
-import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
 from datetime import datetime, timedelta
 
-def generate_risk_data(num_days=30, num_locations=5):
-    """가상의 위험도 데이터를 생성하는 함수"""
-    locations = [f'Location {i+1}' for i in range(num_locations)]
-    dates = [datetime.now().date() + timedelta(days=i) for i in range(num_days)]
+def generate_accident_data(days=365):
+    """가상의 사고 데이터 생성"""
+    dates = [datetime.now().date() - timedelta(days=i) for i in range(days)]
+    accidents = np.random.poisson(lam=2, size=days)  # 평균 2건의 사고가 발생한다고 가정
+    return pd.DataFrame({'date': dates, 'accidents': accidents})
+
+def predict_accidents(data, future_days=30):
+    """간단한 예측 모델"""
+    # 이동 평균을 사용한 간단한 예측
+    window = 7
+    rolling_mean = data['accidents'].rolling(window=window).mean()
+    last_mean = rolling_mean.iloc[-1]
     
-    data = []
-    for location in locations:
-        base_risk = np.random.uniform(20, 80)
-        for date in dates:
-            risk = base_risk + np.random.normal(0, 10)
-            risk = max(0, min(100, risk))  # 위험도를 0-100 범위로 제한
-            data.append({'Date': date, 'Location': location, 'Risk': risk})
+    future_dates = [data['date'].iloc[-1] + timedelta(days=i+1) for i in range(future_days)]
+    future_accidents = [max(0, int(np.random.normal(last_mean, 1))) for _ in range(future_days)]
     
-    return pd.DataFrame(data)
-
-def create_animation(df):
-    """애니메이션 그래프를 생성하는 함수"""
-    fig = go.Figure()
-
-    for location in df['Location'].unique():
-        location_data = df[df['Location'] == location]
-        fig.add_trace(go.Scatter(
-            x=location_data['Date'],
-            y=location_data['Risk'],
-            name=location,
-            mode='lines+markers'
-        ))
-
-    fig.update_layout(
-        title='시간에 따른 위험도 변화 예측',
-        xaxis_title='날짜',
-        yaxis_title='위험도',
-        yaxis=dict(range=[0, 100])
-    )
-
-    fig.update_traces(line=dict(width=2))
-
-    # 애니메이션 설정
-    fig.update_layout(
-        updatemenus=[
-            dict(
-                type="buttons",
-                buttons=[dict(label="재생",
-                              method="animate",
-                              args=[None, {"frame": {"duration": 100, "redraw": True},
-                                           "fromcurrent": True}]),
-                         dict(label="일시정지",
-                              method="animate",
-                              args=[[None], {"frame": {"duration": 0, "redraw": True},
-                                             "mode": "immediate",
-                                             "transition": {"duration": 0}}])]
-            )
-        ]
-    )
-
-    # 프레임 생성
-    frames = [go.Frame(data=[go.Scatter(x=df[df['Date'] <= date]['Date'],
-                                        y=df[df['Date'] <= date]['Risk'],
-                                        mode='lines+markers')
-                             for location in df['Location'].unique()],
-                       name=str(date))
-              for date in df['Date'].unique()]
-    fig.frames = frames
-
-    return fig
+    return pd.DataFrame({'date': future_dates, 'predicted_accidents': future_accidents})
 
 def show_accident_prediction():
     st.subheader("사고 예측 시뮬레이션")
 
-    # 데이터 생성
-    df = generate_risk_data()
+    # 과거 데이터 생성
+    data = generate_accident_data()
 
-    # 애니메이션 그래프 생성
-    fig = create_animation(df)
+    # 미래 예측
+    future_data = predict_accidents(data)
 
-    # Streamlit에 그래프 표시
+    # 데이터 시각화
+    fig = go.Figure()
+
+    # 과거 데이터
+    fig.add_trace(go.Scatter(
+        x=data['date'], 
+        y=data['accidents'],
+        mode='lines+markers',
+        name='과거 사고 데이터'
+    ))
+
+    # 예측 데이터
+    fig.add_trace(go.Scatter(
+        x=future_data['date'], 
+        y=future_data['predicted_accidents'],
+        mode='lines+markers',
+        name='예측 사고 데이터',
+        line=dict(dash='dash')
+    ))
+
+    fig.update_layout(
+        title='사고 발생 추이 및 예측',
+        xaxis_title='날짜',
+        yaxis_title='사고 건수',
+        hovermode='x unified'
+    )
+
     st.plotly_chart(fig, use_container_width=True)
 
-    # 데이터 테이블 표시 (옵션)
-    if st.checkbox("원본 데이터 보기"):
-        st.write(df)
+    # 예측 결과 요약
+    avg_predicted = future_data['predicted_accidents'].mean()
+    st.write(f"향후 30일 동안 예상되는 일일 평균 사고 건수: {avg_predicted:.2f}")
+
+    # 주의사항
+    st.warning("이 예측은 가상의 데이터를 바탕으로 한 간단한 시뮬레이션입니다. 실제 상황에서는 더 복잡한 모델과 실제 데이터가 필요합니다.")
 
 if __name__ == "__main__":
     show_accident_prediction()
