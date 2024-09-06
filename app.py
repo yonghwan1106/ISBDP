@@ -54,7 +54,7 @@ def main():
                 st.warning(f"'{choice}' 기능은 아직 구현되지 않았습니다.")
 
     st.sidebar.markdown("---")
-    st.sidebar.info("© 2024 산업단지 안전 빅데이터 플랫폼 (ISBDP). All rights reserved.")
+    st.sidebar.info("© 2024 산업단지 안전 빅데이터 플랫폼 (ISBDP: Industrial Safety Big Data Platform). All rights reserved.")
 
 if __name__ == "__main__":
     main()
