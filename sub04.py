@@ -27,11 +27,16 @@ def generate_worker_movement_data(num_workers=5, num_points=100):
 
 def create_pydeck_chart(df):
     """PyDeck을 사용하여 3D 동선 차트를 생성하는 함수"""
+    # 색상 매핑을 미리 계산
+    worker_colors = {worker: [r, g, 0] for worker, (r, g) in 
+                     zip(df['worker_id'].unique(), np.random.randint(0, 255, size=(len(df['worker_id'].unique()), 2)))}
+    df['color'] = df['worker_id'].map(worker_colors)
+
     layer = pdk.Layer(
         "PathLayer",
         df,
         get_path="[longitude, latitude, altitude]",
-        get_color="[255, worker_id.hash() % 255, 0]",
+        get_color="color",
         width_scale=20,
         width_min_pixels=2,
         get_width=5,
@@ -47,15 +52,10 @@ def create_pydeck_chart(df):
         bearing=0
     )
 
-    tooltip = {
-        "html": "<b>Worker:</b> {worker_id}<br><b>Time:</b> {timestamp}",
-        "style": {"background": "grey", "color": "white", "font-family": '"Helvetica Neue", Arial', "z-index": "10000"}
-    }
-
     return pdk.Deck(
         layers=[layer],
         initial_view_state=view_state,
-        tooltip=tooltip,
+        tooltip={"text": "{worker_id}\nTime: {timestamp}"},
         map_style="mapbox://styles/mapbox/dark-v9"
     )
 
