@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
@@ -63,19 +64,6 @@ def show_safety_performance_dashboard():
                                  text='Department', title='교육 시간 vs 사고 건수')
     fig_correlation.update_traces(textposition='top center')
     st.plotly_chart(fig_correlation)
-
-    # 부서별 안전 성과 히트맵 (Plotly 히트맵)
-    st.subheader("부서별 안전 성과 히트맵")
-    df_heatmap = df.pivot_table(index='Department', columns='Date', values='Incidents', aggfunc='sum')
-    fig_heatmap = go.Figure(data=go.Heatmap(
-                   z=df_heatmap.values,
-                   x=df_heatmap.columns,
-                   y=df_heatmap.index,
-                   colorscale='Viridis'))
-    fig_heatmap.update_layout(title='부서별 일일 사고 발생 현황', 
-                              xaxis_title='날짜', 
-                              yaxis_title='부서')
-    st.plotly_chart(fig_heatmap)
 
     # 원본 데이터 표시 (옵션)
     if st.checkbox("원본 데이터 보기"):
