@@ -23,7 +23,7 @@ sub10 = import_module('sub10')
 def main():
     st.set_page_config(page_title="산업단지 안전 빅데이터 플랫폼", page_icon="🏭", layout="wide")
     
-    st.title("산업단지 안전 빅데이터 플랫폼 (ISBDP)")
+    st.title("📋 산업단지 안전 빅데이터 플랫폼 (ISBDP)")
 
     menu = [
         "실시간 안전 지도",
