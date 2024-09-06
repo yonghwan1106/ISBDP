@@ -43,6 +43,19 @@ def create_safety_map(df):
 def show_realtime_safety_map():
     st.subheader("실시간 안전 지도")
 
+    # 안전 레벨 색상 안내
+    st.write("안전 레벨 색상 안내:")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.color_picker("안전", "#00FF00", disabled=True)
+        st.write("안전")
+    with col2:
+        st.color_picker("주의", "#FFA500", disabled=True)
+        st.write("주의")
+    with col3:
+        st.color_picker("위험", "#FF0000", disabled=True)
+        st.write("위험")
+
     # 가상의 안전 데이터 생성
     df = generate_safety_data()
 
@@ -51,6 +64,13 @@ def show_realtime_safety_map():
 
     # Streamlit에 지도 표시
     folium_static(m)
+
+    # 통계 정보 표시
+    st.subheader("안전 현황 요약")
+    safety_counts = df['safety_level'].value_counts()
+    st.write(f"안전: {safety_counts.get('안전', 0)}개 지역")
+    st.write(f"주의: {safety_counts.get('주의', 0)}개 지역")
+    st.write(f"위험: {safety_counts.get('위험', 0)}개 지역")
 
     # 데이터 테이블 표시 (옵션)
     if st.checkbox("원본 데이터 보기"):
