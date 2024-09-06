@@ -48,13 +48,10 @@ def show_realtime_safety_map():
     col1, col2, col3 = st.columns(3)
     with col1:
         st.color_picker("안전", "#00FF00", disabled=True)
-    
     with col2:
         st.color_picker("주의", "#FFA500", disabled=True)
-  
     with col3:
         st.color_picker("위험", "#FF0000", disabled=True)
-    
 
     # 가상의 안전 데이터 생성
     df = generate_safety_data()
