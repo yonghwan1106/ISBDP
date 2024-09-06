@@ -4,39 +4,48 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-def generate_environmental_data(num_points=1000):
+def generate_environmental_data(num_points=400):
     """가상의 환경 데이터를 생성하는 함수"""
     x = np.linspace(0, 100, 20)
     y = np.linspace(0, 100, 20)
     x, y = np.meshgrid(x, y)
     
     data = []
-    for _ in range(num_points):
-        temperature = 20 + 5 * np.sin(x/10) + 5 * np.cos(y/10) + np.random.rand(20, 20)
-        humidity = 50 + 20 * np.sin(x/15) + 20 * np.cos(y/15) + np.random.rand(20, 20)
-        co2 = 400 + 50 * np.sin(x/20) + 50 * np.cos(y/20) + np.random.rand(20, 20)
-        
-        for i in range(20):
-            for j in range(20):
-                data.append({
-                    'x': x[i, j],
-                    'y': y[i, j],
-                    'Temperature': temperature[i, j],
-                    'Humidity': humidity[i, j],
-                    'CO2': co2[i, j]
-                })
+    temperature = 20 + 5 * np.sin(x/10) + 5 * np.cos(y/10) + np.random.rand(20, 20)
+    humidity = 50 + 20 * np.sin(x/15) + 20 * np.cos(y/15) + np.random.rand(20, 20)
+    co2 = 400 + 50 * np.sin(x/20) + 50 * np.cos(y/20) + np.random.rand(20, 20)
+    
+    for i in range(20):
+        for j in range(20):
+            data.append({
+                'x': x[i, j],
+                'y': y[i, j],
+                'Temperature': temperature[i, j],
+                'Humidity': humidity[i, j],
+                'CO2': co2[i, j]
+            })
     
     return pd.DataFrame(data)
 
 def create_3d_surface(df, z_column, title):
     """3D 표면 그래프를 생성하는 함수"""
-    fig = go.Figure(data=[go.Surface(z=df[z_column].values.reshape(20, 20),
-                                     x=df['x'].unique(),
-                                     y=df['y'].unique())])
-    fig.update_layout(title=title, autosize=False,
-                      width=500, height=500,
-                      margin=dict(l=65, r=50, b=65, t=90))
-    return fig
+    try:
+        z_data = df[z_column].values.reshape(20, 20)
+        fig = go.Figure(data=[go.Surface(z=z_data,
+                                         x=df['x'].unique(),
+                                         y=df['y'].unique())])
+        fig.update_layout(title=title, autosize=False,
+                          width=500, height=500,
+                          scene=dict(
+                              xaxis_title='X',
+                              yaxis_title='Y',
+                              zaxis_title=z_column
+                          ),
+                          margin=dict(l=65, r=50, b=65, t=90))
+        return fig
+    except ValueError as e:
+        st.error(f"데이터 형식 오류: {e}")
+        return go.Figure()
 
 def show_environmental_data_visualization():
     st.subheader("환경 데이터 시각화")
